@@ -1,34 +1,43 @@
 version: '3'
 
 services:
+  # Apache HTTP Service (Unchanged)
   httpd:
     image: httpd:latest
     ports:
       - "8080:80"  # Expose Apache HTTP server on localhost port 8080
     volumes:
-      - ./html:/usr/local/apache2/htdocs/  # Mount your HTML files for httpd
+      - ./html:/usr/local/apache2/htdocs/  # Mount your HTML files for Apache
 
-  mysql:
-    image: mysql:5.7
+  # MongoDB Service
+  mongo:
+    image: mongo:latest
+    container_name: mongo
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: knote_db
-      MYSQL_USER: knote_user
-      MYSQL_PASSWORD: knote_password
-    volumes:
-      - db_data:/var/lib/mysql
-
-  knote:
-    image: kodekloud/knote  # Example Knote app image
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: knote_db
     ports:
-      - "3000:3000"  # Expose Knote app on localhost port 3000
+      - "27017:27017"  # Expose MongoDB on localhost port 27017
+    volumes:
+      - mongo_data:/data/db  # Store MongoDB data on the host filesystem
+
+  # Jenkins Service
+  jenkins:
+    image: jenkins/jenkins:lts  # Jenkins LTS version
+    container_name: jenkins
+    user: root  # Use root user to avoid permissions issues
+    ports:
+      - "8081:8080"  # Expose Jenkins UI on localhost port 8081
+    volumes:
+      - jenkins_home:/var/jenkins_home  # Persistent Jenkins data (builds, configurations, etc.)
+      - /var/run/docker.sock:/var/run/docker.sock  # Required for Jenkins to interact with Docker
     environment:
-      DB_HOST: mysql  # MySQL service name, as used in Docker Compose networking
-      DB_USER: knote_user
-      DB_PASSWORD: knote_password
-      DB_NAME: knote_db
-    depends_on:
-      - mysql  # Ensure Knote starts after MySQL
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false  # Disable the setup wizard
+    restart: unless-stopped
+    networks:
+      - default
 
 volumes:
-  db_data:
+  mongo_data:
+  jenkins_home:
