@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  httpd:
+    image: httpd:latest
+    ports:
+      - "8080:80"  # Expose Apache HTTP server on localhost port 8080
+    volumes:
+      - ./html:/usr/local/apache2/htdocs/  # Mount your HTML files for httpd
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: knote_db
+      MYSQL_USER: knote_user
+      MYSQL_PASSWORD: knote_password
+    volumes:
+      - db_data:/var/lib/mysql
+
+  knote:
+    image: kodekloud/knote  # Example Knote app image
+    ports:
+      - "3000:3000"  # Expose Knote app on localhost port 3000
+    environment:
+      DB_HOST: mysql  # MySQL service name, as used in Docker Compose networking
+      DB_USER: knote_user
+      DB_PASSWORD: knote_password
+      DB_NAME: knote_db
+    depends_on:
+      - mysql  # Ensure Knote starts after MySQL
+
+volumes:
+  db_data:
