@@ -1,0 +1,29 @@
+
+Router(config)#
+Router(config)#interface Serial2/0
+Router(config-if)#exit
+Router(config)#access-lis 1 deny host 192.168.20.2
+Router(config)#access-lis 1 permit-any
+                                  ^
+% Invalid input detected at '^' marker.
+	
+Router(config)#access-lis 1 permit any
+Router(config)#int fa 0/0
+Router(config-if)#ip access-group 1 out
+Router(config-if)#exit
+Router(config)#
+
+Router#configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#router rip
+Router(config-router)#network 10.0.0.0
+Router(config-router)#
+Router(config-router)#exit
+Router(config)#interface FastEthernet0/0
+Router(config-if)#
+Router(config-if)#exit
+Router(config)#interface Serial2/0
+Router(config-if)#ip address 10.0.0.2 255.0.0.0
+Router(config-if)#
+
+
